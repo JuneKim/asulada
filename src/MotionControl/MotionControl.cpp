@@ -1,47 +1,81 @@
-#include "ros/ros.h"
-#include "std_msgs/String.h"
+#include <string>
 
-#include <sstream>
+#include "Common.h"
 
-/**
- * This is the core to control motor & camera
- */
+using namespace std;
 
-int main(int argc, char **argv)
+namespace Asulada
 {
-	ros::init(argc, argv, "MotionControl");
-
-	ros::NodeHandle nh;
-
-	/**
-	 * @brief motion - publishes motion's status such as moving, or idle. Core could call acitions to other modules
-	 */
-	ros::Publisher motorPublisher = nh.advertise<std_msgs::String>("motion", 1000);
-
-	ros::Rate loop_rate(10);
-
-	int count = 0;
-	while (ros::ok()) {
-		/**
-         * This is a message object. You stuff it with data, and then publish it.
-         */
-		std_msgs::String msg;
-
-		std::stringstream ss;
-		ss << "Motor changed" << count;
-		msg.data = ss.str();
-
-		ROS_INFO("%s", msg.data.c_str());
-
-		/**
-		* publish message whose type is std_msgs::String, and it sends to SmartControl
-		*/
-	 	motorPublisher.publish(msg);
-
-		ros::spinOnce();
-
-		loop_rate.sleep();
-		count++;
-	}
-	return 0;
+MotionControl::MotionControl()
+: isStarted_(false), motor_(nullptr), camera_(nullptr)
+{
+	motor_ = Moter::getInstance();
+	camera_ = Camera::getInstance();
 }
+
+MotionControl::~MotionControl()
+{
+	delete motor_;
+	delete camera_;
+}
+
+Error_t int MotionControl::start()
+{
+	motor_->start();
+	motor_->addListener(this);
+	camera_->start();
+	camera_->addListener(this);
+	isStarted_ = true;
+
+
+	return ERROR_NONE;
+}
+
+void MotionControl::stop()
+{
+	if (isStarted_ == false) {
+		ROS_INFO("not started");
+		return;
+	}
+
+	motor->removeListener(this);
+	camera_->removeListener(this);
+
+	motor_->stop();
+	camera_->stop();
+}
+
+int MotionControl::getValue(double& x, double& y, double& z)
+{
+	if (isStarted != true)
+		return ERROR_NOT_INITIALIZED;
+
+	x = x_;
+	y = y_;
+	z = z_;
+
+	return ERROR_NONE;
+}
+
+void MotionControl::setValue(double x, double y, double z)
+{
+	x_ = x;
+	y_ = y;
+	z_ = z;
+}
+
+void MotionControl::onPosUpdated(double x, double y, double z)
+{
+	setValue(x, y, z);
+}
+
+void MotionControl::onFaceMoved(double xdiff, double ydiff, double zdiff)
+{
+	// calculate movement
+	double x, y, z;
+
+	// move motor....
+	motor_->move(x, y, z);
+}
+
+} // Asulada
