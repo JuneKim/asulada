@@ -1,0 +1,2 @@
+add_subdirectory(asulada_core)
+add_subdirectory(dynamixel_position_controller)

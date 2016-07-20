@@ -6,6 +6,23 @@ find_package(catkin REQUIRED COMPONENTS
   geometry_msgs
 )
 
+add_service_files(
+  DIRECTORY
+  srv
+  FILES
+  SetGoal.srv
+  SetSpeed.srv
+)
+
+add_message_feils(
+  DIRECTORY
+  msg
+  FILES
+  MotorState.msg
+)
+
+generate_messages()
+
 catkin_package(
   INCLUDE_DIRS include
   CATKIN_DEPENDS roscpp std_msgs geometry_msgs

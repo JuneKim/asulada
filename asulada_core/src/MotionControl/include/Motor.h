@@ -8,7 +8,8 @@ public:
 	int goal;
 	int position;
 	int error;
-	int speed;su	float load;
+	int speed;
+	float load;
 	float voltage;
 	int temperature;
 	bool moving;
@@ -24,11 +25,9 @@ public:
 	void removeListener(IMotorWPtr l);
 	int setGoal(int id, int goal);
 	int setSpeed(int id, int speed);
+	int setClockwise(int id, int step);
 	
 	int getGoal(int id);
-	int getSpeed(int id);
-	float getLoad(int id);
-	float getTemperature(int id);
 	bool isMoving(int id);
 private:
 	void _notify();
