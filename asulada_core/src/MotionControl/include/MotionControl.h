@@ -19,13 +19,17 @@ public:
 	 */
 	bool getValue(double& x, double& y, double& z);
 
-	virtual void onPosUpdated(double x, double y, double z);
-	virtual void onFaceMoved(double xdiff, double ydiff, double zdiff);
-	
-private:
-	void setValue(double x, double y, double z);
+	virtual void onUpdated(float timestamp, int id, int goal,
+ 			int position, int error, int speed, float load,
+ 			float voltage, int temperature, bool moving);
 
-	double x_, y_, z_;
+	virtual void onFaceDetected(std::vector<FaceInfo>& faceInfo);
+
+private:
+	int _setGoal(int id, int goal);
+	int _setSpeed(int id, int speed);
+
+	MotorInfo curMotor_;
 	bool isStarted_;
 	Motion* motor_;
 	Camera* camera_;

@@ -1,9 +1,11 @@
 #ifndef __ICAMERA_H__
 #define __ICAMERA_H__
 
+class FaceInfo;
+
 class ICamera {
 public:
-	virtual onFaceMoved(double xdiff, double ydiff, double zdiff) = 0;
+	virtual onFaceDetected(const std::vector<FaceInfo*>& faceInfo) = 0;
 };
 
 #endif /* __ICAMERA_H__ */

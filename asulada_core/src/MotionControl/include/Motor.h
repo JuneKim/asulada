@@ -25,7 +25,6 @@ public:
 	void removeListener(IMotorWPtr l);
 	int setGoal(int id, int goal);
 	int setSpeed(int id, int speed);
-	int setClockwise(int id, int step);
 	
 	int getGoal(int id);
 	bool isMoving(int id);
