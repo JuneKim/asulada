@@ -39,80 +39,72 @@
  * @brief A simplified version of facedetect.cpp, show how to load a cascade classifier and how to find objects (Face + eyes) in a video stream
  */
 
-class FaceInfo {
-public:
-	int centerX;
-	int centerY;
-	int width;
-	int height;
-};
-
-typedef enum {
-	CAMERA_DISALBED = 0,
-	CAMERA_ENABLED,	/* no face */
-	CAMERA_FACE_DETECTED,
-	CAMERA_MULTI_FACE_DETECTED,
-} CameraStatus_t;
-
 using namespace std;
 
 namespace Asulada {
 
-static Camera* inst_ = nullptr;
+static Vision* inst_ = nullptr;
 
-Camera::Camera()
-: inst_(nullptr)
-	,status_(CAMERA_DISABLED)
+Vision::Vision()
+: status_(CAMERA_DISABLED)
 {
+	nh_ = new NodeHandle;
+	it_ = new image_transport::Transport(*nh);
 }
 
-Camera::~Camera()
+Vision::~Vision()
 {
+	if (nh_)
+		delete nh_;
+	if (it_)
+		delete it_;
 }
 
-Camera* getInstance()
+Vision* getInstance()
 {
 	if (!inst_)
-		inst_ = new Camera();
+		inst_ = new Vision();
 	return inst_;
 }
 
-void Camera::setNodeHandle(NodeHandle& nh)
+image_transport::Publisher
+	
+
+int Vision::start()
 {
-	nh_ = nh;
+	/* handle, image 1*/
+	it_->subscribe("image_raw", 1, imageCallback);
 }
 
-int Camera::start()
+void Vision::stop()
 {
+	ROS_INFO("stop vision");
+	img_sub_.shutdown();
+	cam_sub_.shutdown();
 }
 
-void Camera::stop()
-{
-
-}
-
-static void Camera::imageCallbackWithInfo(const sensor_msgs::ImageConstPtr& msg, const sensor_msgs::CameraInfoConstPtr& cam_info
-{
-	_doWork(msg, msg->header.frame_id);
-}
-
-static void Camera::imageCallback(const sensor_msgs::ImageConstPtr& msg)
+static void Vision::imageCallbackWithInfo(const sensor_msgs::ImageConstPtr& msg, const sensor_msgs::VisionInfoConstPtr& cam_info
 {
 	_doWork(msg, msg->header.frame_id);
 }
 
-void Camera::addListener(ICamera* l)
+static void Vision::imageCallback(const sensor_msgs::ImageConstPtr& msg)
+{
+	_doWork(msg, msg->header.frame_id);
+}
+
+void Vision::addListener(IVision* l)
 {
 	if (l == nullptr) return;
 
 	listeners_.push_back(l);
 }
 
-void Camera::removeListener(ICamera* l)
+void Vision::removeListener(IVision* l)
 {
 	if (l == nullptr) return;
 
-	vector<ICamera*>::iterator itor;
+	vector<IVision*>::iterator itor;
 	for (itor = listeners_.begin(); itor != listeners_.end(); itor++) {
 		if (*itor == l) {
 			listeners_.erase(itor);
@@ -120,18 +112,18 @@ void Camera::removeListener(ICamera* l)
 	}	
 }
 
-void Camera::_notify(FaceInfo&& info)
+void Vision::_notify(FaceInfo&& info)
 {
 	if (listeners_.size() <= 0) {
 		return;
 	}
-	vector<ICamera*>::iterator itor;
+	vector<IVision*>::iterator itor;
 	for (itor = listeners_.begin(); itor != listeners_.end(); itor++) {
 		*itor->onFaceDetected(info);
 	}	
 }
 
-const void Camera::_doWork(const sensor_msgs::ImageConstPtr& msg, const std::string input_frame_from_msg)
+const void Vision::_doWork(const sensor_msgs::ImageConstPtr& msg, const std::string input_frame_from_msg)
 {
 	try {
 		cv::Mat frame cv_bridge::toCvShare(msg, msg->encoding)->image;
@@ -212,17 +204,17 @@ const void Camera::_doWork(const sensor_msgs::ImageConstPtr& msg, const std::str
 	prev_stamp_ = msg->header.stamp;
 }
 
-void Camera::_subscribe()
+void Vision::_subscribe()
 {
 	ROS_IFNO("subscribing to image topic");
 	if (config_.use_camera_info) {
-		cam_sub_ = it_->subscribeCamera("image", 3, &Camera::imageCallbackWithInfo, this);
+		cam_sub_ = it_->subscribeVision("image", 3, &Vision::imageCallbackWithInfo, this);
 	} else {
-		img_sub_ = it_->subscribe("image", 3, &Camera::imageCallback, this);
+		img_sub_ = it_->subscribe("image", 3, &Vision::imageCallback, this);
 	}
 }
 
-void Camera::_unsubscribe()
+void Vision::_unsubscribe()
 {
 	img_sub_.shutdown();
 	cam_sub_.shutdown();
