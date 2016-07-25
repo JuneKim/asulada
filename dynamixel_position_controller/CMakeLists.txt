@@ -14,11 +14,11 @@ add_service_files(
   SetSpeed.srv
 )
 
-add_message_feils(
+add_message_files(
   DIRECTORY
   msg
   FILES
-  MotorState.msg
+  MotorStatus.msg
 )
 
 generate_messages()

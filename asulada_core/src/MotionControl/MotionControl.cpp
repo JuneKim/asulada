@@ -1,7 +1,5 @@
 #include <string>
 
-#include "Common.h"
-
 using namespace std;
 
 namespace Asulada

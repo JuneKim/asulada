@@ -9,13 +9,16 @@ find_package(catkin REQUIRED COMPONENTS
   rospy
   std_msgs
   genmsg
+  cv_bridge
+  message_generation
+  image_transport
 )
 
 find_package(OpenCV REQUIRED)
 message(STATUS "OpenCV Components: ${OpenCV_LIB_COMPONENTS}")
-if(OpenCV_VERSION VERION_LESS "3.0" OR TARGET opencv_optflow)
-  set(OPENCV_HAVE_OPTFLOW TRUE)
-endif()
+#if(OpenCV_VERSION VERION_LESS "3.0" OR TARGET opencv_optflow)
+#  set(OPENCV_HAVE_OPTFLOW TRUE)
+#endif()
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
@@ -54,7 +57,6 @@ endif()
 add_message_files(
   FILES
   Motor.msg
-  Rect.msg
   Face.msg
   FaceArray.msg
   FaceArrayStamped.msg
@@ -125,7 +127,7 @@ catkin_package(
 ## Your package locations should be listed before other locations
 # include_directories(include)
 include_directories(
-  include ${catkin_INCLUDE_DIRS} ${OpenCV_INCLUDE_DIRS})
+  include ${catkin_INCLUDE_DIRS} ${OpenCV_INCLUDE_DIRS}
 )
 
 ## Declare a C++ library
@@ -152,7 +154,7 @@ add_dependencies(SmartCore asulada_generate_messages_cpp)
 add_executable(MotorControl
 	src/MotionControl/MotionControl.cpp
 	src/MotionControl/Motor.cpp
-	src/MotionControl/Camera.cpp
+	src/MotionControl/Vision.cpp
 )
 target_link_libraries(MotorControl
 	${catkin_LIBRARIES}
