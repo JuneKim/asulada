@@ -41,10 +41,10 @@
 
 //#include "opencv_apps/FaceDetectionConfig.h"
 #include "asulada_core/Face.h"
-#include "asulada_core/FaceArray.h"
-#include "asulada_core/FaceArrayStamped.h"
+//#include "asulada_core/FaceArray.h"
+//#include "asulada_core/FaceArrayStamped.h"
 
-#include "asulada_core/Vision.h"
+#include "Vision.h"
 
 namespace asulada {
 Vision *Vision::inst_ = nullptr;
