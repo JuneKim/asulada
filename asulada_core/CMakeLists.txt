@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(asulada)
+project(asulada_core)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
@@ -8,17 +8,16 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   rospy
   std_msgs
-  genmsg
+  sensor_msgs
   cv_bridge
   message_generation
-  image_transport
 )
 
 find_package(OpenCV REQUIRED)
-message(STATUS "OpenCV Components: ${OpenCV_LIB_COMPONENTS}")
-#if(OpenCV_VERSION VERION_LESS "3.0" OR TARGET opencv_optflow)
-#  set(OPENCV_HAVE_OPTFLOW TRUE)
-#endif()
+message(STATUS "OpenCV Components: ${OpenCV_LIB_COMPONENT}")
+if(OpenCV_VERSION VERSION_LESS "3.0" OR TARGET opencv_optflow)
+	set(OPENCV_HAVE_OPTFLOW TRUE)
+endif()
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
@@ -54,13 +53,11 @@ message(STATUS "OpenCV Components: ${OpenCV_LIB_COMPONENTS}")
 ##   * add every package in MSG_DEP_SET to generate_messages(DEPENDENCIES ...)
 
 ## Generate messages in the 'msg' folder
-add_message_files(
-  FILES
-  Motor.msg
-  Face.msg
-  FaceArray.msg
-  FaceArrayStamped.msg
-)
+# add_message_files(
+#   FILES
+#   Message1.msg
+#   Message2.msg
+# )
 
 ## Generate services in the 'srv' folder
 # add_service_files(
@@ -112,11 +109,10 @@ generate_messages(
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
-  INCLUDE_DIRS include
-  LIBRARIES asulada include
-  CATKIN_DEPENDS roscpp rospy std_msgs message_runtime
-  DEPENDS system_lib OpenCV
-
+   INCLUDE_DIRS include
+   LIBRARIES asulada_core
+   CATKIN_DEPENDS roscpp rospy std_msgs
+#  DEPENDS system_lib
 )
 
 ###########
@@ -127,50 +123,38 @@ catkin_package(
 ## Your package locations should be listed before other locations
 # include_directories(include)
 include_directories(
-  include ${catkin_INCLUDE_DIRS} ${OpenCV_INCLUDE_DIRS}
+  include
+  ${catkin_INCLUDE_DIRS}
+  ${OpenCV_INCLUDE_DIRS}
 )
 
 ## Declare a C++ library
-# add_library(asulada
-#   src/${PROJECT_NAME}/asulada.cpp
+# add_library(asulada_core
+#   src/${PROJECT_NAME}/asulada_core.cpp
 # )
 
 ## Add cmake target dependencies of the library
 ## as an example, code may need to be generated before libraries
 ## either from message generation or dynamic reconfigure
-# add_dependencies(asulada ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+# add_dependencies(asulada_core ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Declare a C++ executable
-
-add_executable(SmartCore
-	src/SmartCore/SmartCore.cpp
+add_executable(asulada_core
+	src/main.cpp
+	src/MotionCtrl.cpp
+	src/Vision.cpp
+	src/Motor.cpp
 )
-target_link_libraries(SmartCore
-	${catkin_LIBRARIES}
-)
-add_dependencies(SmartCore asulada_generate_messages_cpp)
-
-# MotorControl - controls both camera and motor
-add_executable(MotorControl
-	src/MotionControl/MotionControl.cpp
-	src/MotionControl/Motor.cpp
-	src/MotionControl/Vision.cpp
-)
-target_link_libraries(MotorControl
-	${catkin_LIBRARIES}
-)
-add_dependencies(MotorControl asulada_generate_messages_cpp)
-
-
 
 ## Add cmake target dependencies of the executable
 ## same as for the library above
-# add_dependencies(asulada_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+# add_dependencies(asulada_core_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Specify libraries to link a library or executable target against
-# target_link_libraries(asulada_node
-#   ${catkin_LIBRARIES}
-# )
+target_link_libraries(asulada_core
+    ${catkin_LIBRARIES}
+	${OpenCV_LIBRARY}
+)
 
 #############
 ## Install ##
@@ -187,7 +171,7 @@ add_dependencies(MotorControl asulada_generate_messages_cpp)
 # )
 
 ## Mark executables and/or libraries for installation
-# install(TARGETS asulada asulada_node
+# install(TARGETS asulada_core asulada_core_node
 #   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
 #   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
 #   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
@@ -212,7 +196,7 @@ add_dependencies(MotorControl asulada_generate_messages_cpp)
 #############
 
 ## Add gtest based cpp test target and link libraries
-# catkin_add_gtest(${PROJECT_NAME}-test test/test_asulada.cpp)
+# catkin_add_gtest(${PROJECT_NAME}-test test/test_asulada_core.cpp)
 # if(TARGET ${PROJECT_NAME}-test)
 #   target_link_libraries(${PROJECT_NAME}-test ${PROJECT_NAME})
 # endif()
