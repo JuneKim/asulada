@@ -41,14 +41,33 @@
 
 //#include "opencv_apps/FaceDetectionConfig.h"
 #include "asulada_core/Face.h"
-//#include "asulada_core/FaceArray.h"
-//#include "asulada_core/FaceArrayStamped.h"
+#include "asulada_core/FaceArray.h"
+#include "asulada_core/FaceArrayStamped.h"
 
 #include "Vision.h"
 
 namespace asulada {
-Vision *Vision::inst_ = nullptr;
 
+bool debug_view_;
+ros::Publisher msg_pub_;
+ros::Time prev_stamp_;
+bool always_subscribe_;
+
+cv::CascadeClassifier face_cascade_;
+cv::CascadeClassifier eyes_cascade_;
+image_transport::Publisher img_pub_;
+image_transport::Subscriber img_sub_;
+image_transport::CameraSubscriber cam_sub_;
+
+Vision *Vision::inst_ = NULL;
+
+Vision::Vision()
+{
+}
+
+Vision::~Vision()
+{
+}
 
 void Vision::imageCallbackWithInfo(const sensor_msgs::ImageConstPtr& msg, const sensor_msgs::CameraInfoConstPtr& cam_info)
 {
@@ -60,7 +79,7 @@ void Vision::imageCallback(const sensor_msgs::ImageConstPtr& msg)
     _doWork(msg, msg->header.frame_id);
 }
 
-void Vision::doWork(const sensor_msgs::ImageConstPtr& msg, const std::string input_frame_from_msg)
+void Vision::_doWork(const sensor_msgs::ImageConstPtr& msg, const std::string input_frame_from_msg)
 {
     // Work on the image.
     try
@@ -69,7 +88,7 @@ void Vision::doWork(const sensor_msgs::ImageConstPtr& msg, const std::string inp
       cv::Mat frame = cv_bridge::toCvShare(msg, msg->encoding)->image;
 
       // Messages
-      opencv_apps::FaceArrayStamped faces_msg;
+      asulada_core::FaceArrayStamped faces_msg;
       faces_msg.header = msg->header;
 
       // Do the work
@@ -93,7 +112,7 @@ void Vision::doWork(const sensor_msgs::ImageConstPtr& msg, const std::string inp
       {
         cv::Point center( faces[i].x + faces[i].width/2, faces[i].y + faces[i].height/2 );
         cv::ellipse( frame,  center, cv::Size( faces[i].width/2, faces[i].height/2), 0, 0, 360, cv::Scalar( 255, 0, 255 ), 2, 8, 0 );
-        opencv_apps::Face face_msg;
+        asulada_core::Face face_msg;
         face_msg.face.x = center.x;
         face_msg.face.y = center.y;
         face_msg.face.width = faces[i].width;
@@ -115,7 +134,7 @@ void Vision::doWork(const sensor_msgs::ImageConstPtr& msg, const std::string inp
           int radius = cvRound( (eyes[j].width + eyes[j].height)*0.25 );
           cv::circle( frame, eye_center, radius, cv::Scalar( 255, 0, 0 ), 3, 8, 0 );
 
-          opencv_apps::Rect eye_msg;
+          asulada_core::Rect eye_msg;
           eye_msg.x = eye_center.x;
           eye_msg.y = eye_center.y;
           eye_msg.width = eyes[j].width;
@@ -138,7 +157,7 @@ void Vision::doWork(const sensor_msgs::ImageConstPtr& msg, const std::string inp
     }
     catch (cv::Exception &e)
     {
-      _ERROR("Image processing error: %s %s %s %i", e.err.c_str(), e.func.c_str(), e.file.c_str(), e.line);
+      //_ERROR("Image processing error: %s %s %s %i", e.err.c_str(), e.func.c_str(), e.file.c_str(), e.line);
     }
 
     prev_stamp_ = msg->header.stamp;
@@ -146,19 +165,18 @@ void Vision::doWork(const sensor_msgs::ImageConstPtr& msg, const std::string inp
 
 void Vision::_subscribe()
 {
-    _DEBUG("Subscribing to image topic.");
-    if (config_.use_camera_info)
-      cam_sub_ = it_->subscribeCamera("image", 3, &_imageCallbackWithInfo, this);
-    else
-      img_sub_ = it_->subscribe("image", 3, &_imageCallback, this);
+    //_DEBUG("Subscribing to image topic.");
+//    if (config_.use_camera_info)
+//      cam_sub_ = it_->subscribeCamera("image", 3, &imageCallbackWithInfo, this);
+//    else
+      img_sub_ = it_->subscribe("image", 3, &imageCallback, this);
 }
 
 void Vision::_unsubscribe()
 {
-    _DEBUG("Unsubscribing from image topic.");
+    //_DEBUG("Unsubscribing from image topic.");
     img_sub_.shutdown();
     cam_sub_.shutdown();
-  }
 }
 
 int Vision::start(void)
@@ -172,14 +190,19 @@ int Vision::start(void)
     prev_stamp_ = ros::Time(0, 0);
 
     img_pub_ = advertiseImage(*pnh_, "image", 1);
-    msg_pub_ = advertise<opencv_apps::FaceArrayStamped>(*pnh_, "faces", 1);
+    msg_pub_ = advertise<asulada_core::FaceArrayStamped>(*pnh_, "faces", 1);
 
     std::string face_cascade_name, eyes_cascade_name;
     pnh_->param("face_cascade_name", face_cascade_name, std::string("/usr/share/opencv/haarcascades/haarcascade_frontalface_alt.xml"));
     pnh_->param("eyes_cascade_name", eyes_cascade_name, std::string("/usr/share/opencv/haarcascades/haarcascade_eye_tree_eyeglasses.xml"));
 
-    if( !face_cascade_.load( face_cascade_name ) ){ NODELET_ERROR("--Error loading %s", face_cascade_name.c_str()); };
-    if( !eyes_cascade_.load( eyes_cascade_name ) ){ NODELET_ERROR("--Error loading %s", eyes_cascade_name.c_str()); };
+
+    if( !face_cascade_.load( face_cascade_name ) )
+	{ //_ERROR("--Error loading %s", face_cascade_name.c_str());
+	};
+    if( !eyes_cascade_.load( eyes_cascade_name ) )
+	{ //_ERROR("--Error loading %s", eyes_cascade_name.c_str()); 
+	};
 
 	_subscribe();
 	return 0;
@@ -190,21 +213,7 @@ void Vision::stop(void)
 	_unsubscribe();
 }
 
-Vision::Vision() // TODO
-: inst_(nullptr)
-, img_pub_(nullptr)
-, img_sub_(nullptr)
-, cam_sub_(nullptr)
-, msg_pub_(nullptr)
-, debug_view_(false)
-{
-}
-
-Vision::~Vision()
-{	
-}
-
-Vision::getInstance()
+Vision *Vision::getInstance()
 {
 	if (inst_)
 		inst_ = new Vision();
@@ -212,5 +221,3 @@ Vision::getInstance()
 	return inst_;
 }
 } // namespace asulada
-	
-#endif

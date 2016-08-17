@@ -58,6 +58,7 @@ add_message_files(
   Face.msg
   Rect.msg
   FaceArray.msg
+  FaceArrayStamped.msg
 )
 
 ## Generate services in the 'srv' folder
