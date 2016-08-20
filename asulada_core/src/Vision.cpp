@@ -40,6 +40,8 @@
  */
 
 //#include "opencv_apps/FaceDetectionConfig.h"
+#include <image_transport/image_transport.h>
+#include <image_transport/subscriber.h>
 #include "asulada_core/Face.h"
 #include "asulada_core/FaceArray.h"
 #include "asulada_core/FaceArrayStamped.h"
@@ -169,12 +171,15 @@ void Vision::_subscribe()
 //    if (config_.use_camera_info)
 //      cam_sub_ = it_->subscribeCamera("image", 3, &imageCallbackWithInfo, this);
 //    else
-      img_sub_ = it_->subscribe("image", 3, &imageCallback, this);
+      //img_sub_ = it_->subscribe("image", 3, &imageCallback, this);
+      img_sub_ = it_->subscribe("image", 1, &imageCallback);
+		//url : http://wiki.ros.org/image_transport/Tutorials
 }
 
 void Vision::_unsubscribe()
 {
     //_DEBUG("Unsubscribing from image topic.");
+	// http://docs.ros.org/kinetic/api/image_transport/html/classimage__transport_1_1Subscriber.html
     img_sub_.shutdown();
     cam_sub_.shutdown();
 }
@@ -189,8 +194,8 @@ int Vision::start(void)
     }
     prev_stamp_ = ros::Time(0, 0);
 
-    img_pub_ = advertiseImage(*pnh_, "image", 1);
-    msg_pub_ = advertise<asulada_core::FaceArrayStamped>(*pnh_, "faces", 1);
+    img_pub_ = it_->advertise("image", 1);
+    msg_pub_ = nh_->advertise<asulada_core::FaceArrayStamped>("faces", 1);
 
     std::string face_cascade_name, eyes_cascade_name;
     pnh_->param("face_cascade_name", face_cascade_name, std::string("/usr/share/opencv/haarcascades/haarcascade_frontalface_alt.xml"));
