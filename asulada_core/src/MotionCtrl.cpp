@@ -6,13 +6,14 @@
 
 namespace asulada {
 
-MotionCtrl::MotionCtrl()
+MotionCtrl::MotionCtrl(ros::NodeHandle *nh)
 : curX_(0.0)
 ,  curY_(0.0)
 , curZ_(0.0)
+, pnh_(nh)
 {
-	motor_ = Motor::getInstance();
-	vision_ = Vision::getInstance();
+	motor_ = Motor::getInstance(nh);
+	vision_ = Vision::getInstance(nh);
 }
 
 MotionCtrl::~MotionCtrl()
@@ -37,8 +38,9 @@ void MotionCtrl::stop()
 		motor_->stop();
 }
 
-void MotionCtrl::onFaceDetected(double x, double y, double z)
+void MotionCtrl::onFaceDetected(double x, double y, double dimension)
 {
+	ROS_ERROR("[%f:%f] %f", x, y, x);
 }
 
 void MotionCtrl::onCurrentMotorStatus()

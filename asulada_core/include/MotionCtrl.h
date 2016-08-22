@@ -1,6 +1,7 @@
 #ifndef __MOTION_CTRL_H__
 #define __MOTION_CTRL_H__
 
+#include <ros/ros.h>
 #include "IVision.h"
 #include "IMotor.h"
 
@@ -11,7 +12,7 @@ class Vision;
 
 class MotionCtrl : public IMotor, public IVision {
 public:
-	MotionCtrl();
+	MotionCtrl(ros::NodeHandle *nh);
 	~MotionCtrl();
 	virtual void onFaceDetected(double x, double y, double z); //TODO:
 	virtual void onCurrentMotorStatus(); // TODO
@@ -20,6 +21,7 @@ public:
 
 
 private:
+	ros::NodeHandle *pnh_;
 	int curX_, curY_, curZ_;
 	Motor *motor_;
 	Vision *vision_;

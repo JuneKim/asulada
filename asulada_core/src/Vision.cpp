@@ -47,6 +47,9 @@
 #include "asulada_core/FaceArrayStamped.h"
 
 #include "Vision.h"
+#include "IVision.h"
+
+using namespace std;
 
 namespace asulada {
 
@@ -54,6 +57,7 @@ bool debug_view_;
 ros::Publisher msg_pub_;
 ros::Time prev_stamp_;
 bool always_subscribe_;
+const char* VISION_RAW_IMAGE = "/usb_cam/image_raw";
 
 cv::CascadeClassifier face_cascade_;
 cv::CascadeClassifier eyes_cascade_;
@@ -71,18 +75,47 @@ Vision::~Vision()
 {
 }
 
+void Vision::addListener(asulada::IVision *l)
+{
+	listeners_.push_back(l);
+}
+
+void Vision::removeListener(asulada::IVision *l)
+{
+	vector<IVision*>::iterator itor;
+	for (itor = listeners_.begin(); itor != listeners_.end(); itor++) {
+		if (*itor == l) {
+			listeners_.erase(itor);
+			break;
+		}
+	}	
+}
+
+void Vision::_notify(double x, double y, double dimension)
+{
+	vector<IVision *>::iterator itor;
+	if (listeners_.size() > 0) {
+		for (itor = listeners_.begin(); itor != listeners_.end(); itor++) {
+			((asulada::IVision *)*itor)->onFaceDetected(x, y, dimension);
+		}
+	}
+}
+
 void Vision::imageCallbackWithInfo(const sensor_msgs::ImageConstPtr& msg, const sensor_msgs::CameraInfoConstPtr& cam_info)
 {
-	_doWork(msg, cam_info->header.frame_id);
+	doWork(msg, cam_info->header.frame_id);
 }
 
 void Vision::imageCallback(const sensor_msgs::ImageConstPtr& msg)
 {
-    _doWork(msg, msg->header.frame_id);
+    doWork(msg, msg->header.frame_id);
 }
 
-void Vision::_doWork(const sensor_msgs::ImageConstPtr& msg, const std::string input_frame_from_msg)
+void Vision::doWork(const sensor_msgs::ImageConstPtr& msg, const std::string input_frame_from_msg)
 {
+	double _x, _y, _dimension, _tmpDimension;
+	_x = _y = _dimension = _tmpDimension = 0.0;
+
     // Work on the image.
     try
     {
@@ -120,6 +153,13 @@ void Vision::_doWork(const sensor_msgs::ImageConstPtr& msg, const std::string in
         face_msg.face.width = faces[i].width;
         face_msg.face.height = faces[i].height;
 
+		_tmpDimension = faces[i].width * faces[i].height;
+		if (_dimension < _tmpDimension) {
+			_x = center.x;
+			_y = center.y;
+			_dimension = _tmpDimension;
+		}
+
         cv::Mat faceROI = frame_gray( faces[i] );
         std::vector<cv::Rect> eyes;
 
@@ -143,7 +183,7 @@ void Vision::_doWork(const sensor_msgs::ImageConstPtr& msg, const std::string in
           eye_msg.height = eyes[j].height;
           face_msg.eyes.push_back(eye_msg);
         }
-
+		inst_->_notify(_x, _y, _dimension);
         faces_msg.faces.push_back(face_msg);
       }
       //-- Show what you got
@@ -156,10 +196,11 @@ void Vision::_doWork(const sensor_msgs::ImageConstPtr& msg, const std::string in
       sensor_msgs::Image::Ptr out_img = cv_bridge::CvImage(msg->header, msg->encoding,frame).toImageMsg();
       img_pub_.publish(out_img);
       msg_pub_.publish(faces_msg);
+	  
     }
     catch (cv::Exception &e)
     {
-      //_ERROR("Image processing error: %s %s %s %i", e.err.c_str(), e.func.c_str(), e.file.c_str(), e.line);
+		ROS_ERROR("Image processing error: %s %s %s %i", e.err.c_str(), e.func.c_str(), e.file.c_str(), e.line);
     }
 
     prev_stamp_ = msg->header.stamp;
@@ -167,26 +208,22 @@ void Vision::_doWork(const sensor_msgs::ImageConstPtr& msg, const std::string in
 
 void Vision::_subscribe()
 {
-    //_DEBUG("Subscribing to image topic.");
-//    if (config_.use_camera_info)
-//      cam_sub_ = it_->subscribeCamera("image", 3, &imageCallbackWithInfo, this);
-//    else
-      //img_sub_ = it_->subscribe("image", 3, &imageCallback, this);
-      img_sub_ = it_->subscribe("image", 1, &imageCallback);
-		//url : http://wiki.ros.org/image_transport/Tutorials
+    //ROS_DEBUG("Subscribing to image topic.");
+    cam_sub_ = it_->subscribeCamera(VISION_RAW_IMAGE, 3, &imageCallbackWithInfo);
+	//img_sub_ = it_->subscribe(VISION_RAW_IMAGE, 1, &imageCallback, this);
 }
 
 void Vision::_unsubscribe()
 {
-    //_DEBUG("Unsubscribing from image topic.");
+    //ROS_DEBUG("Unsubscribing from image topic.");
 	// http://docs.ros.org/kinetic/api/image_transport/html/classimage__transport_1_1Subscriber.html
-    img_sub_.shutdown();
+    //img_sub_.shutdown();
     cam_sub_.shutdown();
 }
 
 int Vision::start(void)
   {
-    it_ = boost::shared_ptr<image_transport::ImageTransport>(new image_transport::ImageTransport(*nh_));
+    it_ = boost::shared_ptr<image_transport::ImageTransport>(new image_transport::ImageTransport(*pnh_));
 
     pnh_->param("debug_view", debug_view_, false);
     if (debug_view_ ) {
@@ -195,7 +232,7 @@ int Vision::start(void)
     prev_stamp_ = ros::Time(0, 0);
 
     img_pub_ = it_->advertise("image", 1);
-    msg_pub_ = nh_->advertise<asulada_core::FaceArrayStamped>("faces", 1);
+    msg_pub_ = pnh_->advertise<asulada_core::FaceArrayStamped>("faces", 1);
 
     std::string face_cascade_name, eyes_cascade_name;
     pnh_->param("face_cascade_name", face_cascade_name, std::string("/usr/share/opencv/haarcascades/haarcascade_frontalface_alt.xml"));
@@ -203,10 +240,12 @@ int Vision::start(void)
 
 
     if( !face_cascade_.load( face_cascade_name ) )
-	{ //_ERROR("--Error loading %s", face_cascade_name.c_str());
+	{
+		ROS_ERROR("--Error loading %s", face_cascade_name.c_str());
 	};
     if( !eyes_cascade_.load( eyes_cascade_name ) )
-	{ //_ERROR("--Error loading %s", eyes_cascade_name.c_str()); 
+	{
+		ROS_ERROR("--Error loading %s", eyes_cascade_name.c_str()); 
 	};
 
 	_subscribe();
@@ -218,10 +257,12 @@ void Vision::stop(void)
 	_unsubscribe();
 }
 
-Vision *Vision::getInstance()
+Vision *Vision::getInstance(ros::NodeHandle *nh)
 {
 	if (inst_)
 		inst_ = new Vision();
+
+	inst_->pnh_ = nh;
 
 	return inst_;
 }

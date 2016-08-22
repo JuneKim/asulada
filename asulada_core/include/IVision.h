@@ -5,7 +5,7 @@ namespace asulada {
 
 class IVision {
 public:
-	virtual void onFaceDetected(double x, double y, double z) = 0;
+	virtual void onFaceDetected(double x, double y, double dimension) = 0;
 };
 
 } // namespace asulada

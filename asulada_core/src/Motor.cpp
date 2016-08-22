@@ -10,6 +10,7 @@ asulada::Motor *asulada::Motor::inst_ = NULL;
 namespace asulada {
 
 Motor::Motor()
+: pnh_(NULL)
 {
 }
 
@@ -17,10 +18,11 @@ Motor::~Motor()
 {
 }
 
-Motor *Motor::getInstance()
+Motor *Motor::getInstance(ros::NodeHandle *nh)
 {
 	if (inst_)
 		inst_ = new Motor();
+	inst_->pnh_ = nh;
 
 	return inst_;
 }
