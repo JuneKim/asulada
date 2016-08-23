@@ -6,8 +6,9 @@
 
 using namespace std;
 
-asulada::Motor *asulada::Motor::inst_ = NULL;
 namespace asulada {
+
+Motor *Motor::inst_ = NULL;
 
 Motor::Motor()
 : pnh_(NULL)
@@ -20,7 +21,7 @@ Motor::~Motor()
 
 Motor *Motor::getInstance(ros::NodeHandle *nh)
 {
-	if (inst_)
+	if (!inst_)
 		inst_ = new Motor();
 	inst_->pnh_ = nh;
 

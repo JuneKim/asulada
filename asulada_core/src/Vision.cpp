@@ -93,6 +93,7 @@ void Vision::removeListener(asulada::IVision *l)
 
 void Vision::_notify(double x, double y, double dimension)
 {
+	ROS_INFO("x[%f], y[%f], dimension[%f]", x, y, dimension);
 	vector<IVision *>::iterator itor;
 	if (listeners_.size() > 0) {
 		for (itor = listeners_.begin(); itor != listeners_.end(); itor++) {
@@ -103,16 +104,19 @@ void Vision::_notify(double x, double y, double dimension)
 
 void Vision::imageCallbackWithInfo(const sensor_msgs::ImageConstPtr& msg, const sensor_msgs::CameraInfoConstPtr& cam_info)
 {
+	ROS_INFO("%s", __func__);
 	doWork(msg, cam_info->header.frame_id);
 }
 
 void Vision::imageCallback(const sensor_msgs::ImageConstPtr& msg)
 {
+	ROS_INFO("%s", __func__);
     doWork(msg, msg->header.frame_id);
 }
 
 void Vision::doWork(const sensor_msgs::ImageConstPtr& msg, const std::string input_frame_from_msg)
 {
+	ROS_INFO("doWork");
 	double _x, _y, _dimension, _tmpDimension;
 	_x = _y = _dimension = _tmpDimension = 0.0;
 
@@ -208,9 +212,10 @@ void Vision::doWork(const sensor_msgs::ImageConstPtr& msg, const std::string inp
 
 void Vision::_subscribe()
 {
+	ROS_INFO("%s", __func__);
     //ROS_DEBUG("Subscribing to image topic.");
-    cam_sub_ = it_->subscribeCamera(VISION_RAW_IMAGE, 3, &imageCallbackWithInfo);
-	//img_sub_ = it_->subscribe(VISION_RAW_IMAGE, 1, &imageCallback, this);
+    cam_sub_ = it_->subscribeCamera("image", 3, &imageCallbackWithInfo);
+	//img_sub_ = it_->subscribe(VISION_RAW_IMAGE, 1, &imageCallback);
 }
 
 void Vision::_unsubscribe()
@@ -223,6 +228,7 @@ void Vision::_unsubscribe()
 
 int Vision::start(void)
   {
+	ROS_INFO("%s", __func__);
     it_ = boost::shared_ptr<image_transport::ImageTransport>(new image_transport::ImageTransport(*pnh_));
 
     pnh_->param("debug_view", debug_view_, false);
@@ -259,7 +265,7 @@ void Vision::stop(void)
 
 Vision *Vision::getInstance(ros::NodeHandle *nh)
 {
-	if (inst_)
+	if (!inst_)
 		inst_ = new Vision();
 
 	inst_->pnh_ = nh;
