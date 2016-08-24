@@ -104,19 +104,19 @@ void Vision::_notify(double x, double y, double dimension)
 
 void Vision::imageCallbackWithInfo(const sensor_msgs::ImageConstPtr& msg, const sensor_msgs::CameraInfoConstPtr& cam_info)
 {
-	ROS_INFO("%s", __func__);
+	//ROS_INFO("%s", __func__);
 	doWork(msg, cam_info->header.frame_id);
 }
 
 void Vision::imageCallback(const sensor_msgs::ImageConstPtr& msg)
 {
-	ROS_INFO("%s", __func__);
+	//ROS_INFO("%s", __func__);
     doWork(msg, msg->header.frame_id);
 }
 
 void Vision::doWork(const sensor_msgs::ImageConstPtr& msg, const std::string input_frame_from_msg)
 {
-	ROS_INFO("doWork");
+	//ROS_INFO("doWork");
 	double _x, _y, _dimension, _tmpDimension;
 	_x = _y = _dimension = _tmpDimension = 0.0;
 
@@ -214,12 +214,14 @@ void Vision::_subscribe()
 {
 	ROS_INFO("%s", __func__);
     //ROS_DEBUG("Subscribing to image topic.");
-    cam_sub_ = it_->subscribeCamera("image", 3, &imageCallbackWithInfo);
+    cam_sub_ = it_->subscribeCamera("/usb_cam/image_raw", 1000, &imageCallbackWithInfo);
+	ROS_INFO("get topic info[%s, %s]", cam_sub_.getTopic().c_str(), cam_sub_.getInfoTopic().c_str());
 	//img_sub_ = it_->subscribe(VISION_RAW_IMAGE, 1, &imageCallback);
 }
 
 void Vision::_unsubscribe()
 {
+	ROS_INFO("unsubscribe");
     //ROS_DEBUG("Unsubscribing from image topic.");
 	// http://docs.ros.org/kinetic/api/image_transport/html/classimage__transport_1_1Subscriber.html
     //img_sub_.shutdown();
