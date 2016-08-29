@@ -239,7 +239,7 @@ int Vision::start(void)
     }
     prev_stamp_ = ros::Time(0, 0);
 
-    img_pub_ = it_->advertise("image", 1);
+    img_pub_ = it_->advertise("image", 10);
     msg_pub_ = pnh_->advertise<asulada_core::FaceArrayStamped>("faces", 1);
 
     std::string face_cascade_name, eyes_cascade_name;
