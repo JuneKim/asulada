@@ -42,7 +42,7 @@
 //#include "opencv_apps/FaceDetectionConfig.h"
 #include <image_transport/image_transport.h>
 #include <image_transport/subscriber.h>
-#include "asulada_core/Face.h"
+//#include "asulada_core/Face.h"
 #include "asulada_core/FaceArray.h"
 #include "asulada_core/FaceArrayStamped.h"
 
@@ -214,7 +214,7 @@ void Vision::_subscribe()
 {
 	ROS_INFO("%s", __func__);
     //ROS_DEBUG("Subscribing to image topic.");
-    cam_sub_ = it_->subscribeCamera("/usb_cam/image_raw", 1000, &imageCallbackWithInfo);
+    cam_sub_ = it_->subscribeCamera("/camera/image", 1000, &imageCallbackWithInfo);
 	ROS_INFO("get topic info[%s, %s]", cam_sub_.getTopic().c_str(), cam_sub_.getInfoTopic().c_str());
 	//img_sub_ = it_->subscribe(VISION_RAW_IMAGE, 1, &imageCallback);
 }
