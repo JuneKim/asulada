@@ -139,7 +139,7 @@ include_directories(
 ## Add cmake target dependencies of the library
 ## as an example, code may need to be generated before libraries
 ## either from message generation or dynamic reconfigure
-##add_dependencies(asulada_core ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+##add_dependencies(asulada_core ${PROJECT_NAME}_generate_messages_cpp)
 
 ## Declare a C++ executable
 add_executable(asulada_core
@@ -148,6 +148,7 @@ add_executable(asulada_core
 	src/Vision.cpp
 	src/Motor.cpp
 )
+add_dependencies(asulada_core ${PROJECT_NAME}_generate_messages_cpp)
 
 ## Add cmake target dependencies of the executable
 ## same as for the library above

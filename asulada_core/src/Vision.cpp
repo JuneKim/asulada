@@ -198,7 +198,7 @@ void Vision::doWork(const sensor_msgs::ImageConstPtr& msg, const std::string inp
 
       // Publish the image.
       sensor_msgs::Image::Ptr out_img = cv_bridge::CvImage(msg->header, msg->encoding,frame).toImageMsg();
-      img_pub_.publish(out_img);
+      //img_pub_.publish(out_img);
       msg_pub_.publish(faces_msg);
 	  
     }
