@@ -5,7 +5,7 @@ namespace asulada {
 
 class IMotor {
 public:
-	virtual void onCurrentMotorStatus() = 0;
+	virtual void onCurrentMotorStatus(int pos) = 0;
 };
 
 } // namespace asulada

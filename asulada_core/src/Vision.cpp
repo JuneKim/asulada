@@ -198,9 +198,10 @@ void Vision::doWork(const sensor_msgs::ImageConstPtr& msg, const std::string inp
 
       // Publish the image.
       sensor_msgs::Image::Ptr out_img = cv_bridge::CvImage(msg->header, msg->encoding,frame).toImageMsg();
-      //img_pub_.publish(out_img);
-      msg_pub_.publish(faces_msg);
-	  
+	  if (debug_view_ ) {
+		img_pub_.publish(out_img);
+		msg_pub_.publish(faces_msg);
+	  }
     }
     catch (cv::Exception &e)
     {
@@ -212,9 +213,8 @@ void Vision::doWork(const sensor_msgs::ImageConstPtr& msg, const std::string inp
 
 void Vision::_subscribe()
 {
-	ROS_INFO("%s", __func__);
-    //ROS_DEBUG("Subscribing to image topic.");
-    cam_sub_ = it_->subscribeCamera("/camera/image", 1000, &imageCallbackWithInfo);
+	/* REMARK : set the buffer size to 10 or more. SBC would be freezed even if it was set into 1000 for example */
+    cam_sub_ = it_->subscribeCamera(VISION_RAW_IMAGE, 10, &imageCallbackWithInfo);
 	ROS_INFO("get topic info[%s, %s]", cam_sub_.getTopic().c_str(), cam_sub_.getInfoTopic().c_str());
 	//img_sub_ = it_->subscribe(VISION_RAW_IMAGE, 1, &imageCallback);
 }
@@ -224,7 +224,7 @@ void Vision::_unsubscribe()
 	ROS_INFO("unsubscribe");
     //ROS_DEBUG("Unsubscribing from image topic.");
 	// http://docs.ros.org/kinetic/api/image_transport/html/classimage__transport_1_1Subscriber.html
-    //img_sub_.shutdown();
+    img_sub_.shutdown();
     cam_sub_.shutdown();
 }
 
