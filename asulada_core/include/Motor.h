@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <ros/ros.h>
+#include <std_msgs/Int32.h>
 
 namespace asulada {
 
@@ -16,16 +17,23 @@ public:
 	void stop();
 	void addListener(IMotor *l);
 	void removeListener(IMotor *l);
+	void setGoal(int goal);
 	
 	static Motor *getInstance(ros::NodeHandle *nh);
+	static void positionCallback(const std_msgs::Int32::ConstPtr& position);
 
 private:
-	void _notify();
+	void _notify(int pos);
 
 private:
 	ros::NodeHandle *pnh_;
-	static Motor *inst_;
+	int currentPos_;
+	
+	ros::Publisher goal_pub_;
+	ros::Subscriber pos_sub_;
 	std::vector<IMotor *> listeners_;
+
+	static Motor *inst_;
 };
 
 }

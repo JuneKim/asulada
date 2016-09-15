@@ -26,10 +26,14 @@ public:
 	virtual void onCurrentMotorStatus(int pos); // TODO
 	int start();
 	void stop();
-
+	void setMotorGoal(int goal);
 
 private:
 	FaceArea_e  _getFaceArea(double x, double y);
+	int _getCurrentMotorGoal(FaceArea_e area);
+	void _setCurrentArea(FaceArea_e area);
+	int _faceArea2Arc(FaceArea_e area);
+	
 	ros::NodeHandle *pnh_;
 	double curX_, curY_, curDimension_;
 	FaceArea_e curFaceArea_;
