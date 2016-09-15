@@ -59,12 +59,6 @@ ros::Time prev_stamp_;
 bool always_subscribe_;
 const char* VISION_RAW_IMAGE = "/usb_cam/image_raw";
 
-cv::CascadeClassifier face_cascade_;
-cv::CascadeClassifier eyes_cascade_;
-image_transport::Publisher img_pub_;
-image_transport::Subscriber img_sub_;
-image_transport::CameraSubscriber cam_sub_;
-
 Vision *Vision::inst_ = NULL;
 
 Vision::Vision()
@@ -105,13 +99,13 @@ void Vision::_notify(double x, double y, double dimension)
 void Vision::imageCallbackWithInfo(const sensor_msgs::ImageConstPtr& msg, const sensor_msgs::CameraInfoConstPtr& cam_info)
 {
 	//ROS_INFO("%s", __func__);
-	doWork(msg, cam_info->header.frame_id);
+	inst_->doWork(msg, cam_info->header.frame_id);
 }
 
 void Vision::imageCallback(const sensor_msgs::ImageConstPtr& msg)
 {
 	//ROS_INFO("%s", __func__);
-    doWork(msg, msg->header.frame_id);
+    inst_->doWork(msg, msg->header.frame_id);
 }
 
 void Vision::doWork(const sensor_msgs::ImageConstPtr& msg, const std::string input_frame_from_msg)

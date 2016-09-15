@@ -22,7 +22,7 @@ public:
 	static Vision *getInstance(ros::NodeHandle *nh);
 	static void imageCallbackWithInfo(const sensor_msgs::ImageConstPtr& msg, const sensor_msgs::CameraInfoConstPtr& cam_info);
 	static void imageCallback(const sensor_msgs::ImageConstPtr& msg);
-	static void doWork(const sensor_msgs::ImageConstPtr& msg, const std::string input_frame_from_msg);
+	void doWork(const sensor_msgs::ImageConstPtr& msg, const std::string input_frame_from_msg);
 	int start();
 	void stop();
 	void addListener(IVision *l);
@@ -34,10 +34,13 @@ private:
 	void _notify(double x, double y, double dimension);
 
 	static Vision *inst_;
-//	image_transport::Publisher img_pub_;
-//	image_transport::Subscriber img_sub_;
-//	image_transport::CameraSubscriber cam_sub_;
-//	ros::Publisher msg_pub_;
+	image_transport::Publisher img_pub_;
+	image_transport::Subscriber img_sub_;
+	image_transport::CameraSubscriber cam_sub_;
+
+	cv::CascadeClassifier face_cascade_;
+	cv::CascadeClassifier eyes_cascade_;
+	ros::Publisher msg_pub_;
 
 	boost::shared_ptr<image_transport::ImageTransport> it_;
 	ros::NodeHandle *pnh_;
