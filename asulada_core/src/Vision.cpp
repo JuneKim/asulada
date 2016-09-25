@@ -237,9 +237,10 @@ int Vision::start(void)
     msg_pub_ = pnh_->advertise<asulada_core::FaceArrayStamped>("faces", 1);
 
     std::string face_cascade_name, eyes_cascade_name;
-    pnh_->param("face_cascade_name", face_cascade_name, std::string("/usr/share/opencv/haarcascades/haarcascade_frontalface_alt.xml"));
-    pnh_->param("eyes_cascade_name", eyes_cascade_name, std::string("/usr/share/opencv/haarcascades/haarcascade_eye_tree_eyeglasses.xml"));
-
+//    pnh_->param("face_cascade_name", face_cascade_name, std::string("/usr/share/opencv/haarcascades/haarcascade_frontalface_alt.xml"));
+//    pnh_->param("eyes_cascade_name", eyes_cascade_name, std::string("/usr/share/opencv/haarcascades/haarcascade_eye_tree_eyeglasses.xml"));
+    pnh_->param("face_cascade_name", face_cascade_name, std::string("/opt/ros/kinetic/share/OpenCV-3.1.0-dev/haarcascades/haarcascade_frontalface_alt.xml"));
+    pnh_->param("eyes_cascade_name", eyes_cascade_name, std::string("/opt/ros/kinetic/share/OpenCV-3.1.0-dev/haarcascades/haarcascade_eye_tree_eyeglasses.xml"));
 
     if( !face_cascade_.load( face_cascade_name ) )
 	{

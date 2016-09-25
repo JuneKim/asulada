@@ -49,15 +49,21 @@ void MotionCtrl::stop()
 
 void MotionCtrl::onFaceDetected(double x, double y, double dimension)
 {
+	static int tmp = 0;
 	FaceArea_e area;
 	int goal = 0;
-	ROS_ERROR("[%f:%f] %f", x, y, dimension);
+	ROS_INFO("[%f:%f] %f", x, y, dimension);
 	if (curDimension_ / 2 < dimension && curFaceArea_ != _getFaceArea(x, y)) {
 		// TODO: set arc
+		ROS_INFO("Moved.... and set Arc");
 		area = _getFaceArea(x, y);
 		if (area != curFaceArea_) {
+#if 0
 			goal = _faceArea2Arc(area);
 			setMotorGoal(goal);
+#else
+			setMotorGoal(area);
+#endif
 			curFaceArea_ = area;
 		}
 	}
@@ -70,7 +76,20 @@ void MotionCtrl::onCurrentMotorStatus(int pos)
 
 FaceArea_e  MotionCtrl::_getFaceArea(double x, double y)
 {
-	
+	FaceArea_e area = FACE_AREA_1;
+	if (x > 200) {
+		area = FACE_AREA_5;
+	} else if (x > 150) {
+		area = FACE_AREA_4;
+	} else if (x > 100) {
+		area = FACE_AREA_3;
+	} else if (x > 50) {
+		area = FACE_AREA_2;
+	} else {
+		area = FACE_AREA_1;
+	}
+
+	return area;
 }
 
 void MotionCtrl::_setCurrentArea(FaceArea_e area)
