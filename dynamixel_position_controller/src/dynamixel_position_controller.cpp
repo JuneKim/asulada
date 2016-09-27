@@ -114,11 +114,13 @@ bool DynamixelController::readPosition(uint8_t id, int32_t &position)
 
   if(dxl_comm_result != COMM_SUCCESS)
   {
+      ROS_ERROR("dxl_comm_result != [%d]", dxl_comm_result);
       packetHandler_->printTxRxResult(dxl_comm_result);
       return false;
   }
   else if(dxl_error != 0)
   {
+      ROS_ERROR("dxl_error(%d)", dxl_error);
       packetHandler_->printRxPacketError(dxl_error);
       return false;
   }
@@ -210,11 +212,12 @@ void DynamixelController::checkLoop(void)
   std_msgs::Int32 current_pos;
 
   writeDynamixelRegister(dxl_id_, ADDR_EX_GOAL_POSITION, 2, (int32_t)goal_position_);
-  ROS_INFO("[ID] %u, [Goal Position] %d", dxl_id_, (int32_t)goal_position_);
+  ROS_INFO("[ID] %u, [Goal] %d", dxl_id_, (int32_t)goal_position_);
 
   readPosition(dxl_id_, current_position_);
   current_pos.data = current_position_;
   position_pub_.publish(current_pos);
+  ROS_INFO("[ID] %u, [Curr] %d", dxl_id_, (int32_t)current_position_);
 }
 
 void DynamixelController::closeDynamixel(void)

@@ -6,6 +6,8 @@
 
 namespace asulada {
 
+int MotionCtrl::INIT_ARC = 2000;
+
 MotionCtrl::MotionCtrl(ros::NodeHandle *nh)
 : curX_(0.0)
 ,  curY_(0.0)
@@ -32,6 +34,7 @@ int MotionCtrl::start()
 		vision_->start();
 		vision_->addListener(this);
 	}
+	setMotorGoal(MotionCtrl::INIT_ARC);
 }
 
 void MotionCtrl::stop()
@@ -62,7 +65,8 @@ void MotionCtrl::onFaceDetected(double x, double y, double dimension)
 			goal = _faceArea2Arc(area);
 			setMotorGoal(goal);
 #else
-			setMotorGoal(area);
+			ROS_INFO("curMotorPos_ [%d]", curMotorPos_);
+			setMotorGoal(MotionCtrl::INIT_ARC + 400 * (curFaceArea_ - area)); // tmp
 #endif
 			curFaceArea_ = area;
 		}
@@ -71,6 +75,7 @@ void MotionCtrl::onFaceDetected(double x, double y, double dimension)
 
 void MotionCtrl::onCurrentMotorStatus(int pos)
 {
+	ROS_INFO("current pos[%d]", pos);
 	curMotorPos_ = pos;
 }
 

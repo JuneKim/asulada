@@ -51,6 +51,7 @@ void Motor::stop()
 
 void Motor::setGoal(int goal)
 {
+	ROS_INFO("set goal : %d", goal);
 	std_msgs::Int32 target;
 	target.data = goal;
 	if (goal_pub_)

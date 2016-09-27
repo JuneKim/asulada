@@ -1,0 +1,9 @@
+<launch>
+  <node name="usb_cam" pkg="usb_cam" type="usb_cam_node" output="screen">
+    <param name="video_device" value="/dev/video0" />
+  </node>
+  <node name="dynamixel_position_controller" pkg="dynamixel_position_controller" type="dynamixel_position_controller_node" respawn="false">
+  </node>
+  <node name="asulada_core" pkg="asulada_core" type="asulada_core" output="screen">
+  </node>
+</launch>

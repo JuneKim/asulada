@@ -28,6 +28,8 @@ public:
 	void stop();
 	void setMotorGoal(int goal);
 
+	static int INIT_ARC;
+
 private:
 	FaceArea_e  _getFaceArea(double x, double y);
 	int _getCurrentMotorGoal(FaceArea_e area);
@@ -37,7 +39,7 @@ private:
 	ros::NodeHandle *pnh_;
 	double curX_, curY_, curDimension_;
 	FaceArea_e curFaceArea_;
-	double curMotorPos_;
+	int curMotorPos_;
 	Motor *motor_;
 	Vision *vision_;
 };
