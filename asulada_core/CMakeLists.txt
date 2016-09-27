@@ -10,6 +10,7 @@ find_package(catkin REQUIRED COMPONENTS
   std_msgs
   sensor_msgs
   cv_bridge
+  roslaunch
   image_transport
   message_generation
 )
@@ -194,7 +195,7 @@ target_link_libraries(asulada_core
 #   # myfile2
 #   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
 # )
-
+roslaunch_add_file_check(launch)
 #############
 ## Testing ##
 #############
