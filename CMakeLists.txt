@@ -1,2 +1,3 @@
 add_subdirectory(asulada_core)
+add_subdirectory(usb_cam)
 add_subdirectory(dynamixel_position_controller)
