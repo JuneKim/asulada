@@ -14,7 +14,7 @@ MotionCtrl::MotionCtrl(ros::NodeHandle *nh)
 : curX_(0.0)
 ,  curY_(0.0)
 , curDimension_(0.0)
-, curFaceArea_(FACE_AREA_3)
+, curFaceArea_(FACE_AREA_2)
 , pnh_(nh)
 {
 	motor_ = Motor::getInstance(nh);
@@ -31,7 +31,6 @@ int MotionCtrl::start()
 		motor_->start();
 		motor_->addListener(this);
 	}
-	
 	if (vision_) {
 		vision_->start();
 		vision_->addListener(this);
@@ -88,16 +87,11 @@ void MotionCtrl::onFaceDetected(double x, double y, double dimension)
 		ROS_INFO("Moved.... and set Arc");
 		area = _getFaceArea(x, y);
 		if (area != curFaceArea_) {
-#if 0
-			goal = _faceArea2Arc(area);
-			setMotorGoal(goal);
-#else
 			setLed(1);
 			ROS_INFO("curMotorPos_ [%d]", curMotorPos_);
-			gTarget_ = MotionCtrl::INIT_ARC + 100 * (curFaceArea_ - area);
+			gTarget_ = MotionCtrl::INIT_ARC + 110 * (curFaceArea_ - area);
 			setMotorGoal(gTarget_); // tmp
 			setLed(7);
-#endif
 			curFaceArea_ = area;
 		}
 	}
@@ -108,20 +102,17 @@ void MotionCtrl::onCurrentMotorStatus(int pos)
 	ROS_INFO("current pos[%d]", pos);
 	curMotorPos_ = pos;
 	if (pos == gTarget_) {
-		curFaceArea_ = FACE_AREA_3;
+		curFaceArea_ = FACE_AREA_2;
+		setLed(7);
 	}
 }
 
 FaceArea_e  MotionCtrl::_getFaceArea(double x, double y)
 {
 	FaceArea_e area = FACE_AREA_1;
-	if (x > 256) {
-		area = FACE_AREA_5;
-	} else if (x > 192) {
-		area = FACE_AREA_4;
-	} else if (x > 128) {
+	if (x > 200) {
 		area = FACE_AREA_3;
-	} else if (x > 64) {
+	} else if (x > 100) {
 		area = FACE_AREA_2;
 	} else {
 		area = FACE_AREA_1;

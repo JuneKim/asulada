@@ -1,5 +1,6 @@
 #include <vector>
 #include <iostream>
+#include <ctime>
 
 #include "Motor.h"
 #include "IMotor.h"
@@ -12,6 +13,7 @@ Motor *Motor::inst_ = NULL;
 
 Motor::Motor()
 : pnh_(NULL)
+, curTime_(0.0)
 {
 }
 
@@ -40,6 +42,7 @@ int Motor::start()
 {
 	if (!pos_sub_)
 		pos_sub_ = pnh_->subscribe("/asulada_current_position", 1, &positionCallback);
+	_updateTime();
 
 	return 0;
 }
@@ -49,14 +52,33 @@ void Motor::stop()
 	//TODO : stop subscribe
 }
 
+int Motor::_isValidTime()
+{
+	double curTime = clock() / 1000;
+	if (curTime - curTime_ < 3) {
+		ROS_INFO("## wait for seconds...");
+		return 0;
+	}
+	return 1;
+}
+
+int Motor::_updateTime()
+{
+	curTime_ = clock() / 1000;
+}
+
 void Motor::setGoal(int goal)
 {
 	ROS_INFO("set goal : %d", goal);
+	if (_isValidTime() != 1) {
+		return;
+	}
 	std_msgs::Int32 target;
 	target.data = goal;
-	if (goal_pub_)
+	if (goal_pub_) {
 		goal_pub_.publish(target);
-	else
+		_updateTime();
+	} else
 		ROS_ERROR("invalid goal pub_");
 }
 

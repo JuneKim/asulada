@@ -194,7 +194,7 @@ void Vision::doWork(const sensor_msgs::ImageConstPtr& msg, const std::string inp
       sensor_msgs::Image::Ptr out_img = cv_bridge::CvImage(msg->header, msg->encoding,frame).toImageMsg();
 //	  if (debug_view_ ) {
 		img_pub_.publish(out_img);
-		msg_pub_.publish(faces_msg);
+//		msg_pub_.publish(faces_msg);
 //	  }
     }
     catch (cv::Exception &e)

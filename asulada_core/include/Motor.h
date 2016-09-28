@@ -24,10 +24,14 @@ public:
 
 private:
 	void _notify(int pos);
+	int _updateTime();
+	int _isValidTime();
+
 
 private:
 	ros::NodeHandle *pnh_;
 	int currentPos_;
+	double curTime_;
 	
 	ros::Publisher goal_pub_;
 	ros::Subscriber pos_sub_;
