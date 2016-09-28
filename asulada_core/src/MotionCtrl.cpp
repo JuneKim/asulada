@@ -1,3 +1,4 @@
+#include <std_msgs/String.h>
 #include "MotionCtrl.h"
 #include "Motor.h"
 #include "Vision.h"
@@ -35,6 +36,7 @@ int MotionCtrl::start()
 		vision_->addListener(this);
 	}
 	setMotorGoal(MotionCtrl::INIT_ARC);
+	led_pub_ = pnh_->advertise<std_msgs::String>("ctrl" , 10);
 }
 
 void MotionCtrl::stop()
@@ -48,6 +50,30 @@ void MotionCtrl::stop()
 		motor_->stop();
 		motor_->removeListener(this);
 	}
+}
+
+void MotionCtrl::setLed(int idx)
+{
+	ROS_INFO("set LED");
+	std_msgs::String str;
+	ros::Rate r(60);
+
+	switch(idx) {
+	case 1:
+		str.data = "f";
+		break;
+	case 2:
+	case 3:
+	case 4:
+	case 5:
+	case 6:
+	case 7:
+		str.data = "v";
+		break;
+	default:
+		break;
+	}
+	led_pub_.publish(str);
 }
 
 void MotionCtrl::onFaceDetected(double x, double y, double dimension)
@@ -65,8 +91,10 @@ void MotionCtrl::onFaceDetected(double x, double y, double dimension)
 			goal = _faceArea2Arc(area);
 			setMotorGoal(goal);
 #else
+			setLed(1);
 			ROS_INFO("curMotorPos_ [%d]", curMotorPos_);
 			setMotorGoal(MotionCtrl::INIT_ARC + 400 * (curFaceArea_ - area)); // tmp
+			setLed(7);
 #endif
 			curFaceArea_ = area;
 		}

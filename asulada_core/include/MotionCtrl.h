@@ -27,6 +27,7 @@ public:
 	int start();
 	void stop();
 	void setMotorGoal(int goal);
+	void setLed(int idx);
 
 	static int INIT_ARC;
 
@@ -37,6 +38,7 @@ private:
 	int _faceArea2Arc(FaceArea_e area);
 	
 	ros::NodeHandle *pnh_;
+	ros::Publisher led_pub_;
 	double curX_, curY_, curDimension_;
 	FaceArea_e curFaceArea_;
 	int curMotorPos_;
