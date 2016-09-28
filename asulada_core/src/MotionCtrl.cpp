@@ -8,7 +8,7 @@
 namespace asulada {
 
 int MotionCtrl::INIT_ARC = 2000;
-int MotionCtrl::MIN_DIMENSION = 200;
+int MotionCtrl::gTarget_ = 0;
 
 MotionCtrl::MotionCtrl(ros::NodeHandle *nh)
 : curX_(0.0)
@@ -53,22 +53,6 @@ void MotionCtrl::stop()
 	}
 }
 
-void MotionCtrl::setMotion(int behavior)
-{
-	ROS_INFO("Moving status. status[%d]", behavior);
-	switch (behavior) {
-	case 1:	// detecting face
-		setLed(1);
-		break;
-	case 2: // waating
-		setLed(7);
-		break;
-	case 3:
-	default:
-		break;
-	}
-}
-
 void MotionCtrl::setLed(int idx)
 {
 	ROS_INFO("set LED");
@@ -99,8 +83,7 @@ void MotionCtrl::onFaceDetected(double x, double y, double dimension)
 	FaceArea_e area;
 	int goal = 0;
 	ROS_INFO("[%f:%f] %f", x, y, dimension);
-	//if (curDimension_ / 2 < dimension && curFaceArea_ != _getFaceArea(x, y)) {
-	if (dimension < MIN_DIMENSION) {
+	if (curDimension_ / 2 < dimension && curFaceArea_ != _getFaceArea(x, y)) {
 		// TODO: set arc
 		ROS_INFO("Moved.... and set Arc");
 		area = _getFaceArea(x, y);
@@ -109,10 +92,11 @@ void MotionCtrl::onFaceDetected(double x, double y, double dimension)
 			goal = _faceArea2Arc(area);
 			setMotorGoal(goal);
 #else
-			setMotion(1);
+			setLed(1);
 			ROS_INFO("curMotorPos_ [%d]", curMotorPos_);
-			setMotorGoal(MotionCtrl::INIT_ARC + 400 * (curFaceArea_ - area)); // tmp
-			setMotion(2);
+			gTarget_ = MotionCtrl::INIT_ARC + 100 * (curFaceArea_ - area);
+			setMotorGoal(gTarget_); // tmp
+			setLed(7);
 #endif
 			curFaceArea_ = area;
 		}
@@ -123,18 +107,21 @@ void MotionCtrl::onCurrentMotorStatus(int pos)
 {
 	ROS_INFO("current pos[%d]", pos);
 	curMotorPos_ = pos;
+	if (pos == gTarget_) {
+		curFaceArea_ = FACE_AREA_3;
+	}
 }
 
 FaceArea_e  MotionCtrl::_getFaceArea(double x, double y)
 {
 	FaceArea_e area = FACE_AREA_1;
-	if (x > 200) {
+	if (x > 256) {
 		area = FACE_AREA_5;
-	} else if (x > 150) {
+	} else if (x > 192) {
 		area = FACE_AREA_4;
-	} else if (x > 100) {
+	} else if (x > 128) {
 		area = FACE_AREA_3;
-	} else if (x > 50) {
+	} else if (x > 64) {
 		area = FACE_AREA_2;
 	} else {
 		area = FACE_AREA_1;

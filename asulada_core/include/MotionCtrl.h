@@ -8,7 +8,7 @@
 namespace asulada {
 
 typedef enum {
-	FACE_AREA_1 = 0,
+	FACE_AREA_1 = 1,
 	FACE_AREA_2,
 	FACE_AREA_3,
 	FACE_AREA_4,
@@ -28,10 +28,9 @@ public:
 	void stop();
 	void setMotorGoal(int goal);
 	void setLed(int idx);
-	void setMotion(int behavior);
 
 	static int INIT_ARC;
-	static int MIN_DIMENSION;
+	static int gTarget_;
 
 private:
 	FaceArea_e  _getFaceArea(double x, double y);
