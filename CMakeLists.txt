@@ -1,3 +1,4 @@
 add_subdirectory(asulada_core)
 add_subdirectory(usb_cam)
 add_subdirectory(dynamixel_position_controller)
+add_subdirectory(ros_led_ctrl_for_pi)
