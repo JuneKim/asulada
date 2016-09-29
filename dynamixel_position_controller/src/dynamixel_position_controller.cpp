@@ -110,8 +110,9 @@ bool DynamixelController::readPosition(uint8_t id, int32_t &position)
   int dxl_comm_result = COMM_TX_FAIL;
   int32_t dxl_present_position = 0;
 
-  dxl_comm_result = packetHandler_->read4ByteTxRx(portHandler_, id, ADDR_EX_PRESENT_POSITION, (uint32_t*)&dxl_present_position, &dxl_error);
-
+  // it caused COMM_NOT_ERROR at read
+  //dxl_comm_result = packetHandler_->read4ByteTxRx(portHandler_, id, ADDR_EX_PRESENT_POSITION, (uint32_t*)&dxl_present_position, &dxl_error);
+  dxl_comm_result = packetHandler_->read2ByteTxRx(portHandler_, id, ADDR_EX_PRESENT_POSITION, (uint16_t*)&dxl_present_position, &dxl_error);
   if(dxl_comm_result != COMM_SUCCESS)
   {
       ROS_ERROR("dxl_comm_result != [%d]", dxl_comm_result);
