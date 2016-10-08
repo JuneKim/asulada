@@ -28,8 +28,10 @@ public:
 	void stop();
 	void setMotorGoal(int goal);
 	void setLed(int idx);
+	void setMotion(int behavior);
 
 	static int INIT_ARC;
+	static int MIN_DIMENSION;
 
 private:
 	FaceArea_e  _getFaceArea(double x, double y);
